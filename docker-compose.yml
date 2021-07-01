@@ -1,4 +1,5 @@
 version: "3.7"
+
 services:
   frontend:
     build: Streamlit_Frontend
@@ -7,10 +8,12 @@ services:
     depends_on:
       - backend
     volumes:
+        - ./Streamlit_Frontend:/app
         - ./storage:/storage
   backend:
     build: FastAPI_Backend
     ports:
       - 8000:8000
     volumes:
+      - ./FastAPI_Backend:/app
       - ./storage:/storage
