@@ -75,7 +75,7 @@ def main():
 		
 		st.text("Data visualisation")
 
-		plot_types = ("Line","Histogram","Bar","Scatter")
+		plot_types = ("Line","Pie","Histogram","Bar","Scatter")
 		
 
 		# User choose type
@@ -104,13 +104,11 @@ def main():
 			)
 			elif chart_type == "Bar":
 				fig = (
-				alt.Chart(
-				df.groupby("species", dropna=False).mean().reset_index(),
-				title="Tempreture patern",
-				)
-				.mark_bar()
-				.encode(x="species", y="bill_depth_mm")
-				.interactive()
+				alt.Chart(df).mark_bar().encode(
+				x='Potability:O',
+				y= 'count(Potability):O',
+				color='Potability:N'
+				).interactive()
 				)
 			elif chart_type == "Boxplot":
 				fig = (
@@ -122,6 +120,10 @@ def main():
 				.mark_line()
 				.encode(x="Date:T", y="Daily_min_tem:Q")
 				.interactive()
+				)
+			elif chart_type == "Pie":
+				fig = (
+
 				)
 			return fig
 
