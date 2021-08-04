@@ -5,18 +5,19 @@ import altair as alt
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-st.set_page_config(page_title ="AI service App",initial_sidebar_state="collapsed",page_icon="🔮")
-#st.set_option('wideMode' , True)
-@st.cache(persist=False,allow_output_mutation=True,suppress_st_warning=True,show_spinner= True)
+st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded", layout="wide", page_icon="💦")
+
+#@st.cache(persist=False,allow_output_mutation=True,suppress_st_warning=True,show_spinner= True)
   
 
-def main():
 
+def main():
+ 
 	st.title("Powered by FIWARE AI service for water quality assessment")
 	st.header("Water potability prediction 💦 ")
 	st.write("This application enables to classify the potability of water based on the water composition and water quality metrics")
 	
-	caching.clear_cache()
+	#caching.clear_cache()
 	df =  pd.DataFrame()
 
 	activities = ["About this AI application","Data visualisation","Data preprocessing","Modeling", "Prediction"]
@@ -33,49 +34,55 @@ def main():
 		st.write("This application will explore the different features related to water potability, Modeling, and predicting water potability. It presents an in-depth analysis of what separates potable water from non-potable using statistics, bayesian inference, and other machine learning approaches.")
 		#st.markdown("""The forecasting library used is **[Prophet](https://facebook.github.io/prophet/)**.""")
 
-		#********************** Degin Data upload ****************************
-		#reading a csv with pandas
-		def load_csv():
-			df_input = pd.DataFrame()  
-			df_input=pd.read_csv(input)
-			return df_input
+		
 
-		#saving into a csv a pandas dataframe 
-		def save_csv(df_input):
-			df=pd.DataFrame(input)
-			df_input.to_csv(path_or_buf="/app/data/data.csv")
+		
+	if choices == 'Data visualisation':
+
+		#********************** Degin Data upload ****************************
+
+		if "df" not in st.session_state:
+			st.session_state.df = pd.read_csv("/storage/data.csv")
+			st.session_state.columns = ["ph","Hardness","Solids","Chloramines","Sulfate","Conductivity","Organic_carbon","Trihalomethanes","Turbidity","Potability"]
+			st.session_state.dtypes = [ "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[int64]'>" ]
+
+		#reading a csv with pandas
+		
+		def load_csv(ds):
+			df_input = pd.DataFrame()
+			df_input=pd.read_csv(ds)  
+			#df_input=pd.read_csv(input)
+			#df_input=pd.read_csv(st.session_state.dataframe)
+			return df_input
 
 
 		st.subheader('1. Data loading 🏋️')
-		st.write("Import a time series csv file")
-		#with st.beta_expander("Data format"): 
-			#st.write("The dataset can contain multiple columns but you will need to select a column to be used as dates and a second column containing the metric you wish to forecast. The columns will be renamed as **ds** and **y** to be compliant with Prophet. Even though we are using the default Pandas date parser, the ds (datestamp) column should be of a format expected by Pandas, ideally YYYY-MM-DD for a date or YYYY-MM-DD HH:MM:SS for a timestamp. The y column must be numeric.")
-		with st.beta_expander("Minimum Daily Temperatures Dataset information"):
-			st.write("This dataset contains water quality metrics for 3276 different water bodies. The target is to classify water Potability based on the 9 attributes ")
-		input = st.file_uploader('')
 
+		st.write("Import water potability csv file")
+		with st.beta_expander("Drinking water potability metrics dataset information"):
+			st.write("This dataset contains water quality metrics for 3276 different water bodies. The target is to classify water Potability based on the 9 attributes ")
+		
+		input = st.file_uploader('', key="dataframe")
+		
+	
 		if input:
 			with st.spinner('Loading data..'):
-				df = load_csv()
+				#df = load_csv(st.session_state.df)
+				df = st.session_state.df
 
 				st.write("Columns:")
-				st.write(list(df.columns))
+				st.write(st.session_state.columns)
 
 				st.write("Columns types:")
-				st.write(list(df.dtypes))
+				st.write(st.session_state.dtypes)
 
 		
 		#********************** End data upload ***************************
 
 		
-		#********************** Begin Plotting ****************************
-		
-		
 		st.text("Display uploaded dataframe")
 		if st.checkbox("Show dataset"):
 			st.dataframe(df)
-		
-	if choices == 'Data visualisation':
 		
 		st.subheader('2. Data visualisation 👀')
 		st.text("Data visualisation")
@@ -90,7 +97,7 @@ def main():
 			st.subheader(f"Showing:  {chart_type}")
 			#st.write("")
 
-
+		
 		def altair_plot(chart_type: str, df):
 			""" return altair plots """
 			fig = None
@@ -106,10 +113,11 @@ def main():
 			
 			return fig
 
+		
 		def sns_plot(chart_type: str, df):
 			if chart_type=="Kernel Density Estimate":
-				non_potabale = df.query('Potability == 0')
-				potabale     = df.query('Potability == 1')
+				non_potabale = df.query("Potability == 0")
+				potabale     = df.query("Potability == 1")
 				fig , ax = plt.subplots(3,3)
 				#fig.suptitle("Kernel Density Estimate")
 				sns.kdeplot(ax=ax[0,0], x=non_potabale["Chloramines"],label='Non Potabale')
@@ -144,35 +152,40 @@ def main():
 			if chart_type == "Kernel Density Estimate":
 				sns_plot(chart_type, df)
 
-		
-		show_plot(state.df)
+		if input:
+			show_plot(df)
 				
 	
 		#*********************** End plotting ******************************
 
 
-		#********************** Begin Data preprocessing ********************
-
-	
-		#st.subheader("3. Data processing")
-
-		#Area to select columns based on user input 
-		#Link: https://stackoverflow.com/questions/66885387/how-to-plot-bar-chart-by-allowing-the-user-to-choose-the-columns-using-plotly-an
-		#if input:
-			#columns= list(df.columns) 
-
-			#selected_columns = st.multiselect("select column", options=columns)"""
-
-		#*********************** End Data preprocessing *******************
 
 	if choices == 'Data preprocessing':
+
+		#saving into a csv a pandas dataframe 
+		def save_csv(df_input):
+			df=pd.DataFrame(input)
+			df_input.to_csv(path_or_buf="/app/data/data.csv")
+
 		st.subheader("4. Saving updated dataset")
 		if st.button("save data"):
-			save_csv(state.df)
+			save_csv(df)
+		
+			
+		#df = load_csv(st.session_state.df)
+		df = st.session_state.df
+
+		st.write("Columns:")
+		st.write(st.session_state.columns)
+
+		st.write("Columns types:")
+		st.write(st.session_state.dtypes)
 
 		
 
 	if choices == 'Modeling':
 		st.subheader("Modeling")
+
+		
 if __name__ == '__main__':
 	main()
