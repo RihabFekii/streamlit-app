@@ -161,26 +161,7 @@ def main():
 
 
 	if choices == 'Data preprocessing':
-
-		#saving into a csv a pandas dataframe 
-		def save_csv(df_input):
-			df=pd.DataFrame(input)
-			df_input.to_csv(path_or_buf="/app/data/data.csv")
-
-		st.subheader("4. Saving updated dataset")
-		if st.button("save data"):
-			save_csv(df)
-		
-			
-		#df = load_csv(st.session_state.df)
-		df = st.session_state.df
-
-		st.write("Columns:")
-		st.write(st.session_state.columns)
-
-		st.write("Columns types:")
-		st.write(st.session_state.dtypes)
-
+		st.subheader("Data preprocessing")
 		
 
 	if choices == 'Modeling':
