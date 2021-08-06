@@ -4,6 +4,9 @@ import pandas as pd
 import altair as alt
 import matplotlib.pyplot as plt
 import seaborn as sns
+import requests
+import json
+
 
 st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded", layout="wide", page_icon="💦")
 
@@ -162,10 +165,36 @@ def main():
 
 	if choices == 'Data preprocessing':
 		st.subheader("Data preprocessing")
-		
+
 
 	if choices == 'Modeling':
 		st.subheader("Modeling")
+
+	if choices == 'Prediction':
+		st.subheader("Prediction")
+
+		url= "http://localhost:8000/prediction"
+
+		payload=json.dumps(
+			{
+			"ph":3.716080,
+			"Hardness":204.8904554713363,
+			"Solids":20791.318980747023,
+			"Chloramines":7.300211873184757,
+			"Sulfate":368.51644134980336,
+			"Conductivity":564.3086541722439,
+			"Organic_carbon":10.3797830780847,
+			"Trihalomethanes":86.9909704615088,
+			"Turbidity":2.9631353806316407
+			}
+		)
+
+		headers = {'Content-Type': 'application/json'}
+
+		if st.button("predict"):
+			response = requests.request("GET", url, headers=headers, data=payload)
+			st.write(response.text)
+
 
 		
 if __name__ == '__main__':

@@ -14,6 +14,7 @@ class water_metrics(BaseModel):
 	Conductivity : float
 	Organic_carbon : float
 	Trihalomethanes : float
+	Turbidity : float
 
 #Loading the trained model
 with open("./finalized_model.pkl", "rb") as f:
@@ -23,7 +24,7 @@ with open("./finalized_model.pkl", "rb") as f:
 # The request body contains the key-value pairs of the water metrics parameters
 # We should expect a JSON response with the potability classified.
 
-#['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
+#Columns are: ['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
 @app.post('/prediction')
 def get_potability(data: water_metrics):
     received = data.dict()
@@ -35,12 +36,17 @@ def get_potability(data: water_metrics):
     Conductivity = received['Conductivity']
     Organic_carbon = received['Organic_carbon']
     Trihalomethanes = received['Trihalomethanes']
+    Turbidity = received['Turbidity']
     pred_name = loaded_model.predict([[ph, Hardness, Solids,
                                 Chloramines, Sulfate, Conductivity, Organic_carbon,
-                                Trihalomethanes]]).tolist()[0]
+                                Trihalomethanes,Turbidity]]).tolist()[0]
     return {'prediction': pred_name}
 
-
+@app.get('/prediction')
+def potability(ph : float, Hardness :float ,Solids : float, Chloramines : float, Sulfate : float, Conductivity : float, Organic_carbon : float, Trihalomethanes : float, Turbidity : float):
+	pred_name = loaded_model.predict([[ph, Hardness, Solids,Chloramines, Sulfate, Conductivity, 
+	Organic_carbon,Trihalomethanes,Turbidity]]).tolist()[0]
+	return {'prediction': pred_name}
 
 # homepage route
 @app.get("/")
