@@ -172,8 +172,8 @@ def main():
 
 	if choices == 'Prediction':
 		st.subheader("Prediction")
-
-		url= "http://localhost:8000/prediction"
+		url= "http://backend.docker:8000/prediction"
+		#url= "http://backend_aliases:8000/prediction"
 
 		payload=json.dumps(
 			{
@@ -191,8 +191,23 @@ def main():
 
 		headers = {'Content-Type': 'application/json'}
 
+		st.write("Test sample")
+		sample={
+			"ph":3.716080,
+			"Hardness":204.8904554713363,
+			"Solids":20791.318980747023,
+			"Chloramines":7.300211873184757,
+			"Sulfate":368.51644134980336,
+			"Conductivity":564.3086541722439,
+			"Organic_carbon":10.3797830780847,
+			"Trihalomethanes":86.9909704615088,
+			"Turbidity":2.9631353806316407
+			}
+		st.write(sample)
+	
+
 		if st.button("predict"):
-			response = requests.request("GET", url, headers=headers, data=payload)
+			response = requests.request("POST", url, headers=headers, data=payload)
 			st.write(response.text)
 
 

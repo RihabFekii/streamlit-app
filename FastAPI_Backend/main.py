@@ -25,7 +25,7 @@ with open("./finalized_model.pkl", "rb") as f:
 # We should expect a JSON response with the potability classified.
 
 #Columns are: ['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
-@app.post('/prediction')
+@app.post('/prediction' )
 def get_potability(data: water_metrics):
     received = data.dict()
     ph = received['ph']
@@ -40,9 +40,10 @@ def get_potability(data: water_metrics):
     pred_name = loaded_model.predict([[ph, Hardness, Solids,
                                 Chloramines, Sulfate, Conductivity, Organic_carbon,
                                 Trihalomethanes,Turbidity]]).tolist()[0]
-    return {'prediction': pred_name}
+    return {'Prediction':  pred_name}
 
-@app.get('/prediction')
+#to get data from context broker or query 
+@app.get('/get_attributes')
 def potability(ph : float, Hardness :float ,Solids : float, Chloramines : float, Sulfate : float, Conductivity : float, Organic_carbon : float, Trihalomethanes : float, Turbidity : float):
 	pred_name = loaded_model.predict([[ph, Hardness, Solids,Chloramines, Sulfate, Conductivity, 
 	Organic_carbon,Trihalomethanes,Turbidity]]).tolist()[0]
