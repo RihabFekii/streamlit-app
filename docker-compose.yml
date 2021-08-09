@@ -5,6 +5,10 @@ services:
     build: Streamlit_Frontend
     ports:
       - 8501:8501
+    networks: 
+      AIservice: 
+        aliases: 
+          - fontend.docker
     depends_on:
       - backend
     volumes:
@@ -14,6 +18,13 @@ services:
     build: FastAPI_Backend
     ports:
       - 8000:8000
+    networks: 
+      AIservice: 
+        aliases: 
+          - backend.docker
     volumes:
       - ./FastAPI_Backend:/app
       - ./storage:/storage
+networks:
+  AIservice:
+    external: true
