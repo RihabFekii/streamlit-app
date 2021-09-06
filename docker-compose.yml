@@ -8,12 +8,13 @@ services:
     networks: 
       AIservice: 
         aliases: 
-          - fontend.docker
+          - frontend.docker
     depends_on:
       - backend
     volumes:
         - ./Streamlit_Frontend:/app
         - ./storage:/storage
+
   backend:
     build: FastAPI_Backend
     ports:
@@ -25,6 +26,40 @@ services:
     volumes:
       - ./FastAPI_Backend:/app
       - ./storage:/storage
+
+  orion-ld:
+    image: fiware/orion-ld
+    hostname: orion-ld
+    container_name: fiware-orion-ld
+
+    networks: 
+      AIservice: 
+        aliases: 
+          - orion.docker
+    expose:
+      - "1027"
+    ports:
+      - "1027:1027"
+    depends_on:
+      - mongo-database
+    command: -dbhost mongo.docker -logLevel DEBUG -port 1027
+
+  mongo-database:
+    image: mongo:3.6
+    hostname: mongo-database
+    container_name: database-mongo
+    ports:
+      - "27018:27018" 
+    networks: 
+      AIservice: 
+        aliases: 
+          - mongo.docker
+    command: --nojournal
+    volumes:
+      - mongo-database:/database
+
 networks:
   AIservice:
     external: true
+volumes:
+  mongo-database: ~
