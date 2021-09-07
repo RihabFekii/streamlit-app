@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import requests
 import json
+import logging
 
 
 st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded", layout="wide", page_icon="💦")
@@ -42,7 +43,7 @@ def main():
 		
 	if choices == 'Data visualisation':
 
-		#********************** Degin Data upload ****************************
+	#********************** Degin Data upload ****************************
 
 		if "df" not in st.session_state:
 			st.session_state.df = pd.read_csv("/storage/data.csv")
@@ -61,8 +62,8 @@ def main():
 
 		st.subheader('1. Data loading 🏋️')
 
-		st.write("Import water potability csv file")
-		with st.beta_expander("Drinking water potability metrics dataset information"):
+		st.write("Import your water potability CSV dataset")
+		with st.beta_expander("Water potability metrics dataset information"):
 			st.write("This dataset contains water quality metrics for 3276 different water bodies. The target is to classify water Potability based on the 9 attributes ")
 		
 		input = st.file_uploader('', key="dataframe")
@@ -74,13 +75,13 @@ def main():
 				df = st.session_state.df
 
 				st.write("Columns:")
-				st.write(st.session_state.columns)
+				st.write(df.columns)
 
 				st.write("Columns types:")
-				st.write(st.session_state.dtypes)
+				st.write(df.dtypes)
 
 		
-		#********************** End data upload ***************************
+	#********************** End data upload ***************************
 
 		
 		st.text("Display uploaded dataframe")
@@ -159,7 +160,7 @@ def main():
 			show_plot(df)
 				
 	
-		#*********************** End plotting ******************************
+	#*********************** End plotting ******************************
 
 
 
@@ -170,9 +171,46 @@ def main():
 	if choices == 'Modeling':
 		st.subheader("Modeling")
 
+	#*********************** Start prediction ******************************
+
 	if choices == 'Prediction':
 		st.subheader("Prediction")
-		url= "http://backend.docker:8000/prediction"
+
+		default_id="urn:ngsi-ld:WaterPotabilityMetrics:<id>"
+
+		st.write("Please provide the id of your request")
+
+		id = st.text_input("User input", default_id)
+
+		#Getting the entities from the context broker
+
+
+		url1="http://backend.docker:8000/get_entities/" + id
+
+
+		if st.button("Get actual water metrics parameters"):
+			clicked = True
+			entities = requests.request("GET",url1)
+			logging.info(entities)
+
+			st.write(entities.json())
+
+			p = entities.json()  #dict type
+
+			if st.button("click"):
+		
+				st.write("Extracted Test sample")
+					
+				result = dict(ph=p['Ph'],Hardness=p['Hardness'], Solids = p['Solids'],Chloramines = p['Chloramines'], 
+				Sulfate = p['Sulfate'], Conductivity = p['Conductivity'], Organic_carbon = p['Organic_carbon'],
+				Trihalomethanes = p['Trihalomethanes'], Turbidity = p['Turbidity'] )
+
+				st.write(result)
+				
+
+		#Prediction 
+		header = {'Content-Type': 'application/json'}
+		url3= "http://backend.docker:8000/prediction"
 		#url= "http://backend_aliases:8000/prediction"
 
 		payload=json.dumps(
@@ -189,9 +227,7 @@ def main():
 			}
 		)
 
-		headers = {'Content-Type': 'application/json'}
-
-		st.write("Test sample")
+		st.write("Extracted test sample:")
 		sample={
 			"ph":3.716080,
 			"Hardness":204.8904554713363,
@@ -207,8 +243,8 @@ def main():
 	
 
 		if st.button("predict"):
-			response = requests.request("POST", url, headers=headers, data=payload)
-			st.write(response.text)
+			response = requests.request("POST", url3, headers=header, data=payload)
+			st.success(response.text)
 
 
 		
