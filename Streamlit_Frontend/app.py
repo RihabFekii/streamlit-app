@@ -24,7 +24,7 @@ def main():
 	#caching.clear_cache()
 	df =  pd.DataFrame()
 
-	activities = ["About this AI application","Data visualisation","Data preprocessing","Modeling", "Prediction"]
+	activities = ["About this AI application","Data upload and visualisation","Data preprocessing","Modeling", "Prediction"]
 
 	choices = st.sidebar.radio('Tabs',activities)
 
@@ -41,7 +41,7 @@ def main():
 		
 
 		
-	if choices == 'Data visualisation':
+	if choices == 'Data upload and visualisation':
 
 	#********************** Degin Data upload ****************************
 
@@ -50,14 +50,12 @@ def main():
 			st.session_state.columns = ["ph","Hardness","Solids","Chloramines","Sulfate","Conductivity","Organic_carbon","Trihalomethanes","Turbidity","Potability"]
 			st.session_state.dtypes = [ "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[float64]'>", "<class 'numpy.dtype[int64]'>" ]
 
-		#reading a csv with pandas
 		
-		def load_csv(ds):
-			df_input = pd.DataFrame()
-			df_input=pd.read_csv(ds)  
-			#df_input=pd.read_csv(input)
-			#df_input=pd.read_csv(st.session_state.dataframe)
-			return df_input
+		
+		#def load_csv(ds):
+			#df_input = pd.DataFrame()
+			#df_input=pd.read_csv(ds)  
+			#return df_input
 
 
 		st.subheader('1. Data loading 🏋️')
@@ -71,13 +69,11 @@ def main():
 	
 		if input:
 			with st.spinner('Loading data..'):
-				#df = load_csv(st.session_state.df)
+				#df = load_csv(input)
 				df = st.session_state.df
 
-				st.write("Columns:")
-				st.write(df.columns)
 
-				st.write("Columns types:")
+				st.write("Columns and their types:")
 				st.write(df.dtypes)
 
 		
@@ -99,7 +95,10 @@ def main():
 
 		with st.beta_container():
 			st.subheader(f"Showing:  {chart_type}")
-			#st.write("")
+			if chart_type== "Kernel Density Estimate":
+				st.write("A kernel density estimate (KDE) plot is a method for visualizing the distribution of the water metrics in the dataset.")
+			else: 
+				st.write("Distribution of potability target class")
 
 		
 		def altair_plot(chart_type: str, df):
@@ -167,6 +166,32 @@ def main():
 	if choices == 'Data preprocessing':
 		st.subheader("Data preprocessing")
 
+		st.write("Handeling missing values")
+
+		dd=pd.read_csv("/storage/data.csv")
+
+		fig= plt.figure()
+		plt.title('Missing Values Per Feature')
+		nans = dd.isna().sum().sort_values(ascending=False).to_frame()
+		sns.heatmap(nans,annot=True,vmin=None,fmt='d',cmap='vlag')
+		st.pyplot(fig)
+		
+		
+		if st.button("Deal with missing values"): 
+			# Impute Missing Values with Label Matching Mean
+			for col in dd.columns:
+				missing_label_0 = dd.query('Potability == 0')[col][dd[col].isna()].index
+				dd.loc[missing_label_0,col] = dd.query('Potability == 0')[col][dd[col].notna()].mean()
+
+				missing_label_1 = dd.query('Potability == 1')[col][df[col].isna()].index
+				dd.loc[missing_label_1,col] = dd.query('Potability == 1')[col][dd[col].notna()].mean()
+
+			new_fig= plt.figure()
+			plt.title('Missing Values Per Feature')
+			nanss = dd.isna().sum().to_frame()
+			sns.heatmap(nanss,annot=True,vmin=None, vmax=None, fmt='d',cmap='vlag')
+			st.pyplot(new_fig)
+
 
 	if choices == 'Modeling':
 		st.subheader("Modeling")
@@ -176,9 +201,27 @@ def main():
 	if choices == 'Prediction':
 		st.subheader("Prediction")
 
+		if "p" not in st.session_state:
+			st.session_state.p = json.dumps(
+			{
+			"@context":"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+			"id":"urn:ngsi-ld:WaterPotabilityMetrics:001",
+			"type":"WaterPotabilityMetrics",
+			"ph":3.716080,
+			"Hardness":204.8904554713363,
+			"Solids":20791.318980747023,
+			"Chloramines":7.300211873184757,
+			"Sulfate":368.51644134980336,
+			"Conductivity":564.3086541722439,
+			"Organic_carbon":10.3797830780847,
+			"Trihalomethanes":86.9909704615088,
+			"Turbidity":2.9631353806316407
+			}
+		)
+
 		default_id="urn:ngsi-ld:WaterPotabilityMetrics:<id>"
 
-		st.write("Please provide the id of your request")
+		st.write("Please provide the id of your request to the Context Broker")
 
 		id = st.text_input("User input", default_id)
 
