@@ -13,6 +13,7 @@ st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded"
 
 #@st.cache(persist=False,allow_output_mutation=True,suppress_st_warning=True,show_spinner= True)
   
+df =  pd.DataFrame()
 
 
 def main():
@@ -22,16 +23,18 @@ def main():
 	st.write("This application enables to classify the potability of water based on the water composition and water quality metrics")
 	
 	#caching.clear_cache()
-	df =  pd.DataFrame()
+
 
 	activities = ["About this AI application","Data upload and visualisation","Data preprocessing","Modeling", "Prediction"]
-
-	choices = st.sidebar.radio('Tabs',activities)
+	
+	st.sidebar.title("Navigation")
+	choices = st.sidebar.radio("",activities)
 
     
 		
 	if choices == 'About this AI application':
 
+		st.image("/storage/img2.jpg")
 		st.header("Context")
 		st.write("Access to safe drinking-water is essential to health, a basic human right and a component of effective policy for health protection. This is important as a health and development issue at a national, regional and local level.")
 		st.header("About this application")
@@ -66,7 +69,7 @@ def main():
 		
 		input = st.file_uploader('', key="dataframe")
 		
-	
+
 		if input:
 			with st.spinner('Loading data..'):
 				#df = load_csv(input)
@@ -161,6 +164,7 @@ def main():
 	
 	#*********************** End plotting ******************************
 
+	#*********************** Start Data preprocessing ******************************
 
 
 	if choices == 'Data preprocessing':
@@ -168,56 +172,56 @@ def main():
 
 		st.write("Handeling missing values")
 
-		dd=pd.read_csv("/storage/data.csv")
+		ddd=pd.read_csv("/storage/data.csv")
 
-		fig= plt.figure()
-		plt.title('Missing Values Per Feature')
-		nans = dd.isna().sum().sort_values(ascending=False).to_frame()
-		sns.heatmap(nans,annot=True,vmin=None,fmt='d',cmap='vlag')
-		st.pyplot(fig)
-		
-		
-		if st.button("Deal with missing values"): 
-			# Impute Missing Values with Label Matching Mean
+		def plot(ddd):
+			fig= plt.figure()
+			plt.title('Missing Values Per Feature')
+			nans = ddd.isna().sum().sort_values(ascending=False).to_frame()
+			sns.heatmap(nans,annot=True,vmin=None,fmt='d',cmap='Blues')
+			st.pyplot(fig)
+			return(fig)
+
+
+		if 'plot' in st.session_state:
+			st.button(label='View missing values distribution')
+			fig=st.session_state.plot
+			st.pyplot(fig)
+		elif st.button(label='View missing values distribution'):
+			fig=plot(ddd)
+			#st.pyplot(fig)
+			st.session_state.plot = fig
+
+		def plot_notmissing(dd):
 			for col in dd.columns:
+				
 				missing_label_0 = dd.query('Potability == 0')[col][dd[col].isna()].index
 				dd.loc[missing_label_0,col] = dd.query('Potability == 0')[col][dd[col].notna()].mean()
 
-				missing_label_1 = dd.query('Potability == 1')[col][df[col].isna()].index
+				missing_label_1 = dd.query('Potability == 1')[col][dd[col].isna()].index
 				dd.loc[missing_label_1,col] = dd.query('Potability == 1')[col][dd[col].notna()].mean()
 
-			new_fig= plt.figure()
+			fig= plt.figure()
 			plt.title('Missing Values Per Feature')
-			nanss = dd.isna().sum().to_frame()
-			sns.heatmap(nanss,annot=True,vmin=None, vmax=None, fmt='d',cmap='vlag')
-			st.pyplot(new_fig)
+			nans = dd.isna().sum().sort_values(ascending=False).to_frame()
+			sns.heatmap(nans,annot=True,vmin=None,fmt='d',cmap='Blues')
+			st.pyplot(fig)
+			return(fig)
+			
+		dd=ddd
+		if 'plot_notmissing' in st.session_state:
+			fig2=st.session_state.plot_notmissing
+			st.pyplot(fig2)
+		elif st.button(label='Deal with missing values'):
+			fig2=plot_notmissing(dd)
+			#st.pyplot(fig)
+			st.session_state.plot_notmissing = fig2
+		
+	#***************************** Start modeling *******************************		
 
 
 	if choices == 'Modeling':
 		st.subheader("Modeling")
-
-	#*********************** Start prediction ******************************
-
-	if choices == 'Prediction':
-		st.subheader("Prediction")
-
-		if "p" not in st.session_state:
-			st.session_state.p = json.dumps(
-			{
-			"@context":"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
-			"id":"urn:ngsi-ld:WaterPotabilityMetrics:001",
-			"type":"WaterPotabilityMetrics",
-			"ph":3.716080,
-			"Hardness":204.8904554713363,
-			"Solids":20791.318980747023,
-			"Chloramines":7.300211873184757,
-			"Sulfate":368.51644134980336,
-			"Conductivity":564.3086541722439,
-			"Organic_carbon":10.3797830780847,
-			"Trihalomethanes":86.9909704615088,
-			"Turbidity":2.9631353806316407
-			}
-		)
 
 		default_id="urn:ngsi-ld:WaterPotabilityMetrics:<id>"
 
@@ -225,30 +229,75 @@ def main():
 
 		id = st.text_input("User input", default_id)
 
-		#Getting the entities from the context broker
+		def get_attributes(id):
 
+			url1="http://backend.docker:8000/get_entities/" + id
 
-		url1="http://backend.docker:8000/get_entities/" + id
-
-
-		if st.button("Get actual water metrics parameters"):
-			clicked = True
 			entities = requests.request("GET",url1)
-			logging.info(entities)
+			#logging.info(entities)
 
 			st.write(entities.json())
 
-			p = entities.json()  #dict type
+			p = entities.json()  
+			return p
+	
 
-			if st.button("click"):
-		
-				st.write("Extracted Test sample")
-					
-				result = dict(ph=p['Ph'],Hardness=p['Hardness'], Solids = p['Solids'],Chloramines = p['Chloramines'], 
-				Sulfate = p['Sulfate'], Conductivity = p['Conductivity'], Organic_carbon = p['Organic_carbon'],
-				Trihalomethanes = p['Trihalomethanes'], Turbidity = p['Turbidity'] )
+		if 'get_attributes' in st.session_state:
+			st.button(label='Get actual water metrics parameters')
+			att=st.session_state.get_attributes
+			att=get_attributes(id)
+		elif st.button(label='Get actual water metrics parameters'):
+			att=get_attributes(id)
+			st.session_state.get_attributes = att
 
-				st.write(result)
+		if st.button("click me"):
+			st.write(att)
+	
+	#*********************** End modeling **********************************
+
+
+	#*********************** Start prediction ******************************
+
+	if choices == 'Prediction':
+		st.subheader("Prediction")
+
+		default_id="urn:ngsi-ld:WaterPotabilityMetrics:<id>"
+
+		st.write("Please provide the id of your request to the Context Broker")
+
+		id = st.text_input("User input", default_id)
+
+		def get_attributes(id):
+
+			url1="http://backend.docker:8000/get_entities/" + id
+
+			entities = requests.request("GET",url1)
+			#logging.info(entities)
+
+			st.write(entities.json())
+
+			p = entities.json()  
+			return p
+	
+
+		if 'get_attributes' in st.session_state:
+			st.button(label='Get actual water metrics parameters')
+			att=st.session_state.get_attributes
+			att=get_attributes(id)
+		elif st.button(label='Get actual water metrics parameters'):
+			att=get_attributes(id)
+			st.session_state.get_attributes = att
+
+
+		if st.button("click"):
+	
+			st.write("Extracted Test sample")
+			p=att	
+			result = dict(ph=p['Ph'],Hardness=p['Hardness'], Solids = p['Solids'],Chloramines = p['Chloramines'], 
+			Sulfate = p['Sulfate'], Conductivity = p['Conductivity'], Organic_carbon = p['Organic_carbon'],
+			Trihalomethanes = p['Trihalomethanes'], Turbidity = p['Turbidity'] )
+
+			st.write(result)
 				
 
 		#Prediction 
@@ -259,30 +308,17 @@ def main():
 		payload=json.dumps(
 			{
 			"ph":3.716080,
-			"Hardness":204.8904554713363,
-			"Solids":20791.318980747023,
-			"Chloramines":7.300211873184757,
-			"Sulfate":368.51644134980336,
-			"Conductivity":564.3086541722439,
-			"Organic_carbon":10.3797830780847,
-			"Trihalomethanes":86.9909704615088,
-			"Turbidity":2.9631353806316407
+			"Hardness":204.890455,
+			"Solids":20791.318980,
+			"Chloramines":7.300211,
+			"Sulfate":368.516441,
+			"Conductivity":564.308654,
+			"Organic_carbon":10.379783,
+			"Trihalomethanes":86.990970,
+			"Turbidity":2.963135
 			}
 		)
-
-		st.write("Extracted test sample:")
-		sample={
-			"ph":3.716080,
-			"Hardness":204.8904554713363,
-			"Solids":20791.318980747023,
-			"Chloramines":7.300211873184757,
-			"Sulfate":368.51644134980336,
-			"Conductivity":564.3086541722439,
-			"Organic_carbon":10.3797830780847,
-			"Trihalomethanes":86.9909704615088,
-			"Turbidity":2.9631353806316407
-			}
-		st.write(sample)
+		
 	
 
 		if st.button("predict"):
