@@ -7,7 +7,12 @@ import seaborn as sns
 import requests
 import json
 import logging
-
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np 
+import time
+from sklearn.metrics import accuracy_score, f1_score
+from sklearn import model_selection
+from sklearn.ensemble import GradientBoostingClassifier
 
 st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded", layout="wide", page_icon="💦")
 
@@ -136,6 +141,70 @@ def save_dataset(df,file):
 	new_df.to_csv("/storage/preprocessed_" + name )
 	return df
 
+# RandomForest prams selector function 
+def rf_param_selector():
+
+	criterion = st.selectbox("criterion", ["gini", "entropy"])
+	n_estimators = st.selectbox("n_estimators", options=[5, 10, 50, 100])
+	max_depth = st.selectbox("max_depth", [5, 10, 50])
+	min_samples_split = st.selectbox("min_samples_split", [10, 20, 5])
+
+	params = {
+		"random_state":42,
+		"bootstrap":True,
+		"criterion": criterion,
+		"n_estimators": n_estimators,
+		"max_depth": max_depth,
+		"min_samples_split": min_samples_split,
+		"n_jobs": -1,
+	}
+
+	model = RandomForestClassifier(**params)
+	return model
+
+# train test split function: gets imput from user selection of test and train size from the UI 
+def my_train_test_split(train_size, test_size):
+	data=pd.read_csv("/storage/preprocessed_water_potability.csv")
+	X=data.iloc[:,:-1]
+	y=data.iloc[:, -1]
+	train_x,test_x,train_y,test_y = model_selection.train_test_split(
+		data.iloc[:,:-1], data.iloc[:, -1], test_size=test_size, train_size=train_size, random_state=42)
+	return (train_x,test_x,train_y,test_y)	
+
+def training(model, test_size,train_size):
+	data=pd.read_csv("/storage/preprocessed_water_potability.csv")
+	train_x,test_x,train_y,test_y = model_selection.train_test_split(
+	data.iloc[:,:-1], data.iloc[:, -1], test_size=test_size, train_size=train_size, random_state=42)
+	#model = RandomForestClassifier(random_state=42,bootstrap=True,criterion='gini',max_depth=5,min_samples_leaf=10)
+	t0 = time.time()
+	trained_model= model.fit(train_x,train_y)
+	duration = time.time() - t0
+	duration=np.round(duration,3)
+	y_test_pred= trained_model.predict(test_x)
+
+	test_accuracy = np.round(accuracy_score(test_y, y_test_pred), 3)
+	test_f1 = np.round(f1_score(test_y, y_test_pred, average="weighted"), 3)
+	acc=trained_model.score(test_x,test_y)
+	return test_accuracy,test_f1, duration
+
+# train model and calculate metrics
+def train_model(model, train_x,test_x,train_y,test_y):
+    t0 = time.time()
+	#st.write(type(train_x))
+	#st.write(type(train_y))
+    trained_model=model.fit(train_x, train_y)
+    duration = time.time() - t0
+    y_train_pred = trained_model.predict(train_x)
+    y_test_pred = trained_model.predict(test_x)
+
+    train_accuracy = np.round(accuracy_score(train_y, y_train_pred), 3)
+    train_f1 = np.round(f1_score(train_y, y_train_pred, average="weighted"), 3)
+
+    test_accuracy = np.round(accuracy_score(test_y, y_test_pred), 3)
+    test_f1 = np.round(f1_score(test_y, y_test_pred, average="weighted"), 3)
+
+    return trained_model, train_accuracy, train_f1, test_accuracy, test_f1, duration
+
 # User input: ID for the GET request to the Context Broker (to get the entities)
 def user_input(default_id):
 	id = st.text_input("User input", default_id)
@@ -173,6 +242,7 @@ def predict(result):
 	return response
 
 
+
 def main():
 	
 	st.title("AI service for water quality assessment powered by FIWARE ")
@@ -187,7 +257,13 @@ def main():
 
 	sign=False
 	test=False
-	indice=False
+	train_X=pd.DataFrame()
+	test_X=pd.DataFrame()
+	train_Y=pd.DataFrame()
+	test_Y = pd.DataFrame()
+	accuracy="Not yet defined before training"
+	f1="Not yet defined before training"
+	duration="..."
  #************************* Start About this AI application ***************************  
 		
 	if choices == 'About this AI application':
@@ -317,19 +393,89 @@ def main():
 #********************************* Start Modeling ***********************************		
 
 	if choices == 'Modeling':
-		st.header("Modeling")
+		st.header("Modeling 💡")
 
-		st.subheader("Train Test split")
-		
-		with st.beta_expander("Learn more about Train Test split "):
-			st.write("train_test_split is a function in Sklearn model selection for splitting data arrays into two subsets: for training data and for testing data. With this function, you don't need to divide the dataset manually. It is a technique for evaluating the performance of a machine learning algorithm.")
+		col1, col2 = st.beta_columns((1, 1))
 
-		col = st.beta_columns(2)
+		with col2:
+
+			st.subheader("2. Train Test split")
 		
-		col[0].selectbox("Train size", options=[70,80,90] , index=1)
-		col[1].selectbox("Test size", options=[30,20,10], index=1)
-		
-		#st.selectbox("Train size", options=[70,80,90])
+			train_size = st.selectbox("Train size", options=[70,80,90] , index=1)
+			test_size = st.selectbox("Test size", options=[30,20,10], index=1)
+
+			if (train_size + test_size != 100):
+				st.error("Train and test size sum must be equal to 100")
+
+			train_test_samples = my_train_test_split(test_size=test_size,train_size=train_size)
+
+			if "my_train_test_split" in st.session_state:
+				train_test_samples = st.session_state.my_train_test_split
+				st.success("Dataset splitted!")
+			elif st.button(label="Train-test-split"):
+				with st.spinner("Split loading.."):
+					train_test_samples = my_train_test_split(test_size=test_size,train_size=train_size)
+					st.session_state.my_train_test_split = train_test_samples
+				(train_X,test_X,train_Y,test_Y) = st.session_state.my_train_test_split
+				st.success("Dataset splitted!")
+
+
+		with col1:
+			st.subheader("1. Classifier algorithm")
+
+			st.selectbox("Select classification algorithm", options=["RandomForestClassifer"])
+
+			st.info("Link to scikit-learn official documentation about the chosen model [here](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)")
+
+				
+		Col1, Col2 = st.beta_columns((1, 1))
+
+		with Col1:
+			st.subheader("3. Model parameters")
+			model = rf_param_selector()
+			if st.button("Train"):
+				acc , f1, duration=training(model,test_size,train_size)
+				#test_accuracy, test_f1=training(model,train_x=train_X, train_y=train_Y, test_x=test_X, test_y=test_Y)
+				#st.write(acc)
+				accuracy = acc
+				#st.write(f1)
+				#st.write(duration)
+
+
+
+		with Col2:
+			st.subheader("4. Model metrics")
+			
+			st.write("Model accuracy")
+
+			st.warning("Accuracy =  " + str(accuracy) )
+
+			st.write("Model F1 score" )
+
+			st.warning("F1 score =  " + str(f1))
+
+			st.write("Training duration")
+
+			st.warning("Traning took =  " + str(duration) + " seconds")
+
+		Column1, Column2 = st.beta_columns((1, 1))
+
+		with Column1:
+			st.subheader("5. Saving trained model")
+			if st.button("Save model"):
+				st.success("model saved")
+
+
+
+
+
+
+
+
+
+			
+			
+
 
 
 
