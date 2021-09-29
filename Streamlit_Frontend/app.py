@@ -435,11 +435,8 @@ def main():
 			model = rf_param_selector()
 			if st.button("Train"):
 				acc , f1, duration=training(model,test_size,train_size)
-				#test_accuracy, test_f1=training(model,train_x=train_X, train_y=train_Y, test_x=test_X, test_y=test_Y)
-				#st.write(acc)
 				accuracy = acc
-				#st.write(f1)
-				#st.write(duration)
+
 
 
 
@@ -467,18 +464,6 @@ def main():
 
 
 
-
-
-
-
-
-
-			
-			
-
-
-
-
 	
 #******************************* End modeling **********************************
 
@@ -502,11 +487,11 @@ def main():
 			st.button(label='Get actual water metrics parameters')
 			att=st.session_state.get_attributes
 			att=get_attributes(url_entities)
-			test=True
+			#test=False
 		elif st.button(label='Get actual water metrics parameters'):
 			att=get_attributes(url_entities)
 			st.session_state.get_attributes = att
-			test=True
+			#test=True
 
 		if 'extract_attributes' in st.session_state:
 			st.button(label='Process actual data')
@@ -515,6 +500,7 @@ def main():
 			result = extract_attributes(att)
 			st.write(result)
 		elif st.button(label='Process actual data'):
+			
 			st.write("Extracted test sample")
 			result = extract_attributes(att)
 			st.write(result)
@@ -522,22 +508,28 @@ def main():
 		
 
 		#Prediction 
-		if test==True:
-			#result = st.session_state.extract_attributes
-			if 'predict' in st.session_state:
-				st.button(label='Predict')
-				response = st.session_state.predict
-				if "Not Potable" in response:
-					st.error(response)
-				else:
-					st.success(response)
-			elif st.button(label='Predict'):
-				response = predict(result)
-				if "Not Potable" in response:
-					st.error(response)
-				else:
-					st.success(response)
-				st.session_state.predict = response
+		#if test==True:
+		if 'predict' in st.session_state:
+			st.button(label='Predict')
+			response = predict(result)
+			if "Not Potable" in response:
+				st.error(response)
+			else:
+				st.success(response)
+		elif st.button(label='Predict'):
+			response = predict(result)
+			st.session_state.predict = response
+			if "Not Potable" in response:
+				st.error(response)
+			else:
+				st.success(response)
+
+
+
+
+
+
+			
 				
 
 
