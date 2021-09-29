@@ -8,7 +8,7 @@ import json
 app = FastAPI()
 
 #Creating a class for the attributes input to the ML model.
-class water_metrics(BaseModel):
+class WaterMetrics(BaseModel):
 	ph : float
 	Hardness :float
 	Solids : float
@@ -30,7 +30,7 @@ with open("./finalized_model.pkl", "rb") as f:
 
 #Columns are: ['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
 @app.post('/prediction' )
-def get_potability(data: water_metrics):
+def get_potability(data: WaterMetrics):
     received = data.dict()
     ph = received['ph']
     Hardness = received['Hardness']
@@ -47,6 +47,7 @@ def get_potability(data: water_metrics):
     return {'Prediction':  pred_name}
 
 # ph : float, Hardness :float ,Solids : float, Chloramines : float, Sulfate : float, Conductivity : float, Organic_carbon : float, Trihalomethanes : float, Turbidity : float
+## Ph , Hardness,Solids, Chloramines, Sulfate, Conductivity, Organic_carbon, Trihalomethanes, Turbidity
 #to get data from context broker or query 
 @app.post('/extract_attributes')
 def ML_model_input(): 
@@ -61,7 +62,7 @@ def ML_model_input():
     Trihalomethanes = p['Trihalomethanes']
     Turbidity = p['Turbidity']
     
-    result = water_metrics()
+    result = WaterMetrics()
     result['Ph']=ph
     result['Hardness']= Hardness
     result['Solids']=Solids
@@ -94,6 +95,6 @@ def read_root():
 	return {'message': 'This is the homepage of the API '}
 
 @app.post('/data')
-def show_data(data: water_metrics):
+def show_data(data: WaterMetrics):
     return {'message': data}
 
