@@ -56,7 +56,17 @@ services:
           - mongo.docker
     command: --nojournal
     volumes:
-      - mongo-database:/database
+      - mongo-database:/database#
+
+    # @context file is served from here
+  ngsi-ld-context:
+    image: httpd:alpine
+    hostname: context
+    container_name: ld-context
+    ports:
+        - "3004:80"
+    volumes:
+        - ./data-models:/usr/local/apache2/htdocs/
 
 networks:
   AIservice:

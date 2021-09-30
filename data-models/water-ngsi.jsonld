@@ -1,0 +1,20 @@
+{
+    "@context": {
+        "type": "@type",
+        "id": "@id",
+        "ngsi-ld": "https://uri.etsi.org/ngsi-ld/",
+        "fiware": "https://uri.fiware.org/ns/data-models#",
+        "schema": "https://schema.org/",
+        "Chloramines": "fiware:Chloramines",
+        "Conductivity": "fiware:Conductivity",
+        "Hardness": "fiware:Hardness",
+        "Organic_carbon": "fiware:Organic_carbon",
+        "Potability": "fiware:Potability",
+        "Solids": "fiware:Solids",
+        "Sulfate": "fiware:Sulfate",
+        "Trihalomethanes": "fiware:Trihalomethanes",
+        "Turbidity": "fiware:Turbidity",
+        "WaterPotabilityMetrics": "fiware:WaterPotabilityMetrics",
+        "Ph": "fiware:Ph"
+    }
+}
