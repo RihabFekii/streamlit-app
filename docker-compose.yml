@@ -61,8 +61,11 @@ services:
     # @context file is served from here
   ngsi-ld-context:
     image: httpd:alpine
-    hostname: context
     container_name: ld-context
+    networks: 
+      AIservice: 
+        aliases: 
+          - context
     ports:
         - "3004:80"
     volumes:
