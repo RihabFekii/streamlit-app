@@ -9,7 +9,7 @@ app = FastAPI()
 
 #Creating a class for the attributes input to the ML model.
 class WaterMetrics(BaseModel):
-	ph : float
+	Ph : float
 	Hardness :float
 	Solids : float
 	Chloramines : float
@@ -32,7 +32,7 @@ with open("./finalized_model.pkl", "rb") as f:
 @app.post('/prediction' )
 def get_potability(data: WaterMetrics):
     received = data.dict()
-    ph = received['ph']
+    ph = received['Ph']
     Hardness = received['Hardness']
     Solids = received['Solids']
     Chloramines = received['Chloramines']
@@ -46,34 +46,6 @@ def get_potability(data: WaterMetrics):
                                 Trihalomethanes,Turbidity]]).tolist()[0]
     return {'Prediction':  pred_name}
 
-# ph : float, Hardness :float ,Solids : float, Chloramines : float, Sulfate : float, Conductivity : float, Organic_carbon : float, Trihalomethanes : float, Turbidity : float
-## Ph , Hardness,Solids, Chloramines, Sulfate, Conductivity, Organic_carbon, Trihalomethanes, Turbidity
-#to get data from context broker or query 
-@app.post('/extract_attributes')
-def ML_model_input(): 
-    p= dict()
-    ph = p['Ph']
-    Hardness = p['Hardness']
-    Solids = p['Solids']
-    Chloramines = p['Chloramines']
-    Sulfate = p['Sulfate']
-    Conductivity = p['Conductivity']
-    Organic_carbon = p['Organic_carbon']
-    Trihalomethanes = p['Trihalomethanes']
-    Turbidity = p['Turbidity']
-    
-    result = WaterMetrics()
-    result['Ph']=ph
-    result['Hardness']= Hardness
-    result['Solids']=Solids
-    result['Chloramines']= Chloramines
-    result['Sulfate']=Sulfate
-    result['Conductivity']= Conductivity
-    result['Organic_carbon']=Organic_carbon
-    result['Trihalomethanes']= Trihalomethanes
-    result['Turbidity']= Turbidity
-
-    return result
 
 #Query to the Context Broker to get entities 
 #url1="http://orion.docker:1027/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001?options=keyValues"
@@ -82,8 +54,14 @@ def ML_model_input():
 async def get_entities(id:str ):
     #requires_response_body = True
     url="http://orion.docker:1027/ngsi-ld/v1/entities/" +  id + "?options=keyValues"
+
+    headers = {
+	'Link': '<http://context/water-ngsi.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"',
+	'Accept': 'application/ld+json'
+	}
+
     client = httpx.Client()
-    response = client.get(url)
+    response = client.get(url,headers=headers)
     
     logger.info(response.json())
     return response.json()
@@ -94,7 +72,5 @@ async def get_entities(id:str ):
 def read_root():
 	return {'message': 'This is the homepage of the API '}
 
-@app.post('/data')
-def show_data(data: WaterMetrics):
-    return {'message': data}
+
 
