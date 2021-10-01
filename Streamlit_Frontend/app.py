@@ -215,7 +215,12 @@ def get_attributes(url):
 
 	#url="http://backend.docker:8000/get_entities/" + id
 
-	entities = requests.request("GET",url)
+	headers = {
+	'Link': '<http://context/water-ngsi.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"',
+	'Accept': 'application/ld+json'
+	}
+
+	entities = requests.request("GET",url,headers=headers)
 
 	st.write(entities.json())
 	att = entities.json()  
@@ -223,7 +228,7 @@ def get_attributes(url):
 
 # Extracts attributes from the GET entities request payload, which will be injected to the ML model 
 def extract_attributes(att):	
-	result = dict(ph=att['Ph'],Hardness=att['Hardness'], Solids = att['Solids'],Chloramines = att['Chloramines'], 
+	result = dict(Ph=att['Ph'],Hardness=att['Hardness'], Solids = att['Solids'],Chloramines = att['Chloramines'], 
 	Sulfate = att['Sulfate'], Conductivity = att['Conductivity'], Organic_carbon = att['Organic_carbon'],
 	Trihalomethanes = att['Trihalomethanes'], Turbidity = att['Turbidity'] )
 	return result 
