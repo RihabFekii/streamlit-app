@@ -210,7 +210,7 @@ def user_input(default_id):
 	id = st.text_input("User input", default_id)
 	return id 
 
-# GET attributes from the Contaxt broker corresponding to id
+# GET attributes from the Context broker corresponding to id
 def get_attributes(url):
 
 	#url="http://backend.docker:8000/get_entities/" + id
@@ -225,6 +225,16 @@ def get_attributes(url):
 	st.write(entities.json())
 	att = entities.json()  
 	return att
+
+#notify context broker of Prediction attribute (Potability) update 
+def notify_pred(id: str , resp:str):
+	#url = "http://backend.docker:8000/patch_prediction/" + id
+	url_notification= "http://backend.docker:8000/prediction/" + id + "/" + resp
+
+	response = requests.request("PATCH", url_notification)
+
+	return(response.text)
+
 
 # Extracts attributes from the GET entities request payload, which will be injected to the ML model 
 def extract_attributes(att):	
@@ -486,7 +496,7 @@ def main():
 		id = user_input(default_id)
 
 		url_entities="http://backend.docker:8000/get_entities/" + id
-			
+	
 			
 		if 'get_attributes' in st.session_state:
 			st.button(label='Get actual water metrics parameters')
@@ -512,30 +522,33 @@ def main():
 			st.session_state.extract_attributes = result
 		
 
+		def pred_and_patch(id,result):
+			response = predict(result)
+			notify_pred(id , response[1:-1])
+
+
 		#Prediction 
 		#if test==True:
 		if 'predict' in st.session_state:
-			st.button(label='Predict')
-			response = predict(result)
+			if st.button(label='Predict'):
+				response = predict(result)
+				notify_pred(id , response[1:-1])
 			if "Not Potable" in response:
-				st.error(response)
+				st.error(response[1:-1])
 			else:
-				st.success(response)
+				st.success(response[1:-1])
 		elif st.button(label='Predict'):
 			response = predict(result)
+			notify_pred(id , response[1:-1])
 			st.session_state.predict = response
 			if "Not Potable" in response:
-				st.error(response)
+				st.error(response[1:-1])
 			else:
-				st.success(response)
+				st.success(response[1:-1])
+		#url_notification= "http://backend.docker:8000/prediction/" + id + "/" + response
 
-
-
-
-
-
-			
-				
+		#if st.button("notify"):
+			#notify_pred(id , response[1:-1])
 
 
 		
