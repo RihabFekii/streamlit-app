@@ -235,7 +235,6 @@ def notify_pred(id: str , resp:str):
 
 	return(response.text)
 
-
 # Extracts attributes from the GET entities request payload, which will be injected to the ML model 
 def extract_attributes(att):	
 	result = dict(Ph=att['Ph'],Hardness=att['Hardness'], Solids = att['Solids'],Chloramines = att['Chloramines'], 
@@ -254,8 +253,8 @@ def predict(result):
 	
 	response = requests.request("POST", url3, headers=header, data=payload)
 	response = response.text
-	return response
 
+	return response
 
 
 def main():
@@ -528,15 +527,17 @@ def main():
 
 
 		#Prediction 
-		#if test==True:
+
 		if 'predict' in st.session_state:
-			if st.button(label='Predict'):
-				response = predict(result)
-				notify_pred(id , response[1:-1])
+			st.button(label='Predict')
+			response = predict(result)
+			notify_pred(id , response[1:-1])
 			if "Not Potable" in response:
 				st.error(response[1:-1])
 			else:
 				st.success(response[1:-1])
+			if st.button("Notify prediction"):
+				notify_pred(id , response[1:-1])
 		elif st.button(label='Predict'):
 			response = predict(result)
 			notify_pred(id , response[1:-1])
@@ -545,10 +546,8 @@ def main():
 				st.error(response[1:-1])
 			else:
 				st.success(response[1:-1])
-		#url_notification= "http://backend.docker:8000/prediction/" + id + "/" + response
-
-		#if st.button("notify"):
-			#notify_pred(id , response[1:-1])
+			if st.button("Notify prediction"):
+				notify_pred(id , response[1:-1])
 
 
 		
