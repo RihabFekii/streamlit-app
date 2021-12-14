@@ -1,3 +1,12 @@
+## Prototype your data sceince projects easily with Streamlit and FastAPI
+
+The goal is to enable the user to easily preprocess data, train and test an ML model via a web interface.  
+The data is provisioned in real-time via REST API.
+
+This is a simple web interface which showcases the prediction phase: 
+
+![Streamlit_App](https://miro.medium.com/max/1400/1*2lBlL4ltEz-lxRAnpP_neg.png)
+
 ## Building the fontend
 
 Paste in the terminal the following command: 
