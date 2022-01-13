@@ -39,7 +39,7 @@ http://localhost:8000/docs
 
 To package the whole solution which uses multiple images/service, I am using Docker Compose. 
 So there will be no need to build each of the previous images( Streamlit and FastAPI) separately. 
-In the docker-compose.yml file this is configured and you could so that by running this command:
+In the docker-compose.yml file this is configured and you could do that by running this command:
 
     "docker-compose up -d --build"
 
