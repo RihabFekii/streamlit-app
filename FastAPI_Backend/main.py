@@ -8,7 +8,7 @@ import json
 
 app = FastAPI()
 
-#Creating a class for the attributes input to the ML model.
+# Creating a class for the attributes input to the ML model.
 class WaterMetrics(BaseModel):
 	Ph : float
 	Hardness :float
@@ -21,15 +21,15 @@ class WaterMetrics(BaseModel):
 	Turbidity : float
 
 
-#Loading the trained model
+# Loading the trained model
 with open("./finalized_model.pkl", "rb") as f:
     loaded_model = pickle.load(f)
 
-#Sending a post request to the “/prediction” route with a request body. 
+# Sending a post request to the “/prediction” route with a request body. 
 # The request body contains the key-value pairs of the water metrics parameters
 # We should expect a JSON response with the potability classified.
 
-#Columns are: ['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
+# Columns are: ['ph', 'Hardness', 'Solids', 'Chloramines', 'Sulfate', 'Conductivity','Organic_carbon', 'Trihalomethanes']
 @app.post('/prediction' )
 def get_potability(data: WaterMetrics):
     received = data.dict()
@@ -51,11 +51,10 @@ def get_potability(data: WaterMetrics):
 @app.post('/subscription')
 def subscription(data :dict = Body(...)):
     #output_data=await data.json()
-    print("Hiii")
     print(data)
 
 
-#Query to the Context Broker to get entities 
+# Query to the Context Broker to get entities 
 #url1="http://orion.docker:1027/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001?options=keyValues"
 
 @app.get("/get_entities/{id}")
@@ -90,8 +89,6 @@ def notify_prediction(id:str,potability:str):
     response = client.patch(url, headers=headers, data=payload)
 
     return response.json()
-
-
 
 
 # homepage route
