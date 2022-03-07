@@ -28,7 +28,6 @@ div.stButton > button:first-child {{background-color: #fffff ; border: 2px solid
 st.markdown(s, unsafe_allow_html=True)
 
 
-
 # Read CSV -> outputs Pandas Dataframe
 def load_csv(ds):
 	df_input = pd.DataFrame()
@@ -205,10 +204,12 @@ def train_model(model, train_x,test_x,train_y,test_y):
 
     return trained_model, train_accuracy, train_f1, test_accuracy, test_f1, duration
 
+
 # User input: ID for the GET request to the Context Broker (to get the entities)
 def user_input(default_id):
 	id = st.text_input("User input", default_id)
 	return id 
+
 
 # GET attributes from the Context broker corresponding to id
 def get_attributes(url):
@@ -226,6 +227,7 @@ def get_attributes(url):
 	att = entities.json()  
 	return att
 
+
 #notify context broker of Prediction attribute (Potability) update 
 def notify_pred(id: str , resp:str):
 	#url = "http://backend.docker:8000/patch_prediction/" + id
@@ -241,6 +243,7 @@ def extract_attributes(att):
 	Sulfate = att['Sulfate'], Conductivity = att['Conductivity'], Organic_carbon = att['Organic_carbon'],
 	Trihalomethanes = att['Trihalomethanes'], Turbidity = att['Turbidity'] )
 	return result 
+
 
 # ML model prediction function using the prediction API request
 def predict(result): 
