@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   frontend:
-    build: Streamlit_Frontend
+    build: frontend
     ports:
       - 8501:8501
     networks: 
@@ -12,11 +12,10 @@ services:
     depends_on:
       - backend
     volumes:
-        - ./Streamlit_Frontend:/app
         - ./storage:/storage
 
   backend:
-    build: FastAPI_Backend
+    build: backend
     ports:
       - 8000:8000
     networks: 
@@ -24,7 +23,6 @@ services:
         aliases: 
           - backend.docker
     volumes:
-      - ./FastAPI_Backend:/app
       - ./storage:/storage
 
   orion-ld:
@@ -54,22 +52,6 @@ services:
       AIservice: 
         aliases: 
           - mongo.docker
-    command: --nojournal
-    volumes:
-      - mongo-database:/database#
-
-    # @context file is served from here
-  ngsi-ld-context:
-    image: httpd:alpine
-    container_name: ld-context
-    networks: 
-      AIservice: 
-        aliases: 
-          - context
-    ports:
-        - "3004:80"
-    volumes:
-        - ./data-models:/usr/local/apache2/htdocs/
 
 networks:
   AIservice:
