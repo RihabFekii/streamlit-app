@@ -3,10 +3,13 @@ import streamlit as st
 
 from modeling.models_params import rf_param_selector
 from modeling.training import my_train_test_split, training
-from prediction.input import extract_attributes, get_attributes, user_input
+from prediction.input_manager import extract_attributes, get_attributes, user_input
 from prediction.predict import notify_pred, predict
 from processing.data_manager import (column_types, file_upload, load_csv, plot,
                                      plot_notmissing, save_dataset, show_plot)
+
+
+#***************************** Start HTML configuration *****************************
 
 st.set_page_config(page_title ="AI service App",initial_sidebar_state="expanded", layout="wide", page_icon="💦")
   
@@ -19,7 +22,7 @@ div.stButton > button:first-child {{background-color: #fffff ; border: 2px solid
 """
 st.markdown(s, unsafe_allow_html=True)
 
-
+#************************* End HTML configuration ***************************
 
 def main():
 	
@@ -27,8 +30,6 @@ def main():
 	st.header("Water potability prediction 💦 ")
 	st.write("This application enables to classify the potability of water based on the water composition and water quality metrics")
 	
-	#caching.clear_cache()
-
 	activities = ["About this AI application","Data upload and visualisation","Data preprocessing","Modeling", "Prediction"]
 	st.sidebar.title("Navigation")
 	choices = st.sidebar.radio("",activities)
@@ -38,11 +39,13 @@ def main():
 	test_X = pd.DataFrame()
 	train_Y = pd.DataFrame()
 	test_Y = pd.DataFrame()
-	accuracy="Not yet defined before training"
-	f1="Not yet defined before training"
-	duration="..."
+	accuracy = "Not yet defined before training"
+	f1 = "Not yet defined before training"
+	duration = "..."
+
+
  #************************* Start About this AI application ***************************  
-		
+
 	if choices == 'About this AI application':
 
 		st.image("/storage/img2.jpg")
@@ -50,9 +53,9 @@ def main():
 		st.write("Access to safe drinking-water is essential to health, a basic human right and a component of effective policy for health protection. This is important as a health and development issue at a national, regional and local level.")
 		st.header("About this application")
 		st.write("This application will explore the different features related to water potability, Modeling, and predicting water potability. It presents an in-depth analysis of what separates potable water from non-potable using statistics, bayesian inference, and other machine learning approaches.")
-		#st.markdown("""The ML algorithm used is **[Sickit learn](https://facebook.github.io/prophet/)**.""")
 
 #********************** End About this AI application *********************************
+
 
 #********************** Start Data upload and visualisation ***************************  
 		
@@ -80,8 +83,8 @@ def main():
 			else:
 				df = load_csv(file)
 				st.session_state.load_csv = df
-
 			
+
 		# Dataframe columns and types	
 		if file:
 			st.write("Columns and their types:")
@@ -112,12 +115,10 @@ def main():
 		if file:
 			show_plot(df,chart_type)
 				
-
 #********************** End Data upload and visualisation ***************************  
 
 
 #**************************** Start Data preprocessing *******************************
-
 
 	if choices == 'Data preprocessing':
 		st.header("Data preprocessing")
@@ -134,7 +135,6 @@ def main():
 				st.pyplot(fig)
 			elif st.button(label='View missing values distribution'):
 				fig = plot(df)
-				#st.pyplot(fig)
 				st.session_state.plot = fig
 	
 			dd=df	
@@ -146,7 +146,6 @@ def main():
 			elif st.button(label='Deal with missing values'):
 				sign= True
 				fig2=plot_notmissing(dd)
-				#st.pyplot(fig)
 				st.session_state.plot_notmissing = fig2
 
 			if 'save_dataset' in st.session_state:
@@ -158,13 +157,13 @@ def main():
 				dd = save_dataset(dd,file)
 				st.session_state.save_dataset = dd
 				st.info("Dataset saved and will be used for training")
-							
 
 		else: 
 			st.warning("Please upload file first")
 
 #**************************** End Data preprocessing *******************************
-		
+	
+
 #********************************* Start Modeling ***********************************		
 
 	if choices == 'Modeling':
@@ -235,7 +234,6 @@ def main():
 			if st.button("Save model"):
 				st.success("model saved")
 
-	
 #******************************* End modeling **********************************
 
 
@@ -252,7 +250,6 @@ def main():
 		id = user_input(default_id)
 
 		url_entities="http://backend.docker:8000/get_entities/" + id
-	
 			
 		if 'get_attributes' in st.session_state:
 			st.button(label='Get actual water metrics parameters')
@@ -277,7 +274,6 @@ def main():
 			st.session_state.extract_attributes = result
 
 		#Prediction 
-
 		if 'predict' in st.session_state:
 			st.button(label='Predict')
 			response = predict(result)

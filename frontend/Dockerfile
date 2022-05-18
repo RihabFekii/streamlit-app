@@ -10,6 +10,5 @@ COPY . /app
 
 EXPOSE 8501
 
-ENTRYPOINT ["streamlit","run"]
-CMD ["app.py"]
+CMD ["streamlit", "run", "app.py", "--logger.level=debug"]
 

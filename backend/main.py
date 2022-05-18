@@ -55,12 +55,12 @@ def subscription(data :dict = Body(...)):
 
 
 # Query to the Context Broker to get entities 
-#url1="http://orion.docker:1027/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001?options=keyValues"
+#url1="http://orion.docker:1026/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001?options=keyValues"
 
 @app.get("/get_entities/{id}")
 async def get_entities(id:str ):
     #requires_response_body = True
-    url="http://orion.docker:1027/ngsi-ld/v1/entities/" +  id + "?options=keyValues"
+    url="http://orion.docker:1026/ngsi-ld/v1/entities/" +  id + "?options=keyValues"
 
     headers = {
 	'Link': '<http://context/water-ngsi.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"',
@@ -75,7 +75,7 @@ async def get_entities(id:str ):
 
 @app.patch("/prediction/{id}/{potability}")
 def notify_prediction(id:str,potability:str):
-    url = "http://orion.docker:1027/ngsi-ld/v1/entities/" + id + "/attrs/Potability"
+    url = "http://orion.docker:1026/ngsi-ld/v1/entities/" + id + "/attrs/Potability"
 
     payload = json.dumps({
 	"value": potability,
