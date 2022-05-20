@@ -1,10 +1,10 @@
-from fastapi import FastAPI , Request , Body
-from pydantic import BaseModel
-import pickle
-from fastapi.logger import logger
-import httpx
 import json
-#import requests
+import pickle
+
+import httpx
+from fastapi import Body, FastAPI
+from fastapi.logger import logger
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -54,21 +54,13 @@ def subscription(data :dict = Body(...)):
     print(data)
 
 
-# Query to the Context Broker to get entities 
-#url1="http://orion.docker:1026/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001?options=keyValues"
-
 @app.get("/get_entities/{id}")
 async def get_entities(id:str ):
-    #requires_response_body = True
+    
     url="http://orion.docker:1026/ngsi-ld/v1/entities/" +  id + "?options=keyValues"
 
-    headers = {
-	'Link': '<http://context/water-ngsi.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"',
-	'Accept': 'application/ld+json'
-	}
-
     client = httpx.Client()
-    response = client.get(url,headers=headers)
+    response = client.get(url)
     
     logger.info(response.json())
     return response.json()
@@ -83,7 +75,7 @@ def notify_prediction(id:str,potability:str):
 	})
     headers = {
 	'Content-Type': 'application/json',
-	'Link': '<http://context/water-ngsi.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+	'Link': '<http://context/ngsi-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
 	}
     client = httpx.Client()
     response = client.patch(url, headers=headers, data=payload)
