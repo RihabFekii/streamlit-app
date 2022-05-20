@@ -32,13 +32,74 @@ Since we have multiple containers communcating with each other, I created a brid
 
 First create the network AIService by running this command:
 
-    "docker netork create AIservice"
+    "docker network create AIservice"
 
 
 Run the whole application by executing this command:
 
     "docker-compose up -d --build"
 
+## Dataset to test application 
 
+To test this application, the dataset which should be uploaded should follow the same column names as this sample dataset under **streamlit-app/storage/data.csv**
 
+## Inference 
 
+When you navigate to the prediction tab, you have to first create an entity at the Context Broker by sending a POST request at the "/ngsi-ld/v1/entities" endpoint.
+
+The **ID** here is what we need to do the prediction through the UI, which is in this example **urn:ngsi-ld:WaterPotabilityMetrics:001**.
+
+```shell
+curl -v --location --request POST 'http://localhost:1027/ngsi-ld/v1/entities' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "id": "urn:ngsi-ld:WaterPotabilityMetrics:001",
+    "type": "WaterPotabilityMetrics",
+    "Ph":{
+    "type":"Property",
+    "value":12.716080
+},
+"Hardness":{
+    "type":"Property",
+    "value":64.8904554713363
+},
+"Solids":{
+    "type":"Property",
+    "value":10791.318980747023
+},
+"Chloramines":{
+    "type":"Property",
+    "value":1191.318980747023
+},
+"Sulfate":{
+    "type":"Property",
+    "value":248.51644134980336
+},
+"Conductivity":{
+    "type":"Property",
+    "value":564.3086541722439
+},
+"Organic_carbon":{
+    "type":"Property",
+    "value":10.3797830780847
+},
+"Trihalomethanes":{
+    "type":"Property",
+    "value":9.3797830780847
+},
+"Turbidity":{
+    "type":"Property",
+    "value":2.8631353806316407
+},
+"Potability":{
+    "type":"Property",
+    "value":"False"
+}
+}'
+````
+
+To Querry the Context Broker and verify that the entity is created, run this command in the terminal: 
+
+```shell
+curl --location --request GET 'localhost:1027/ngsi-ld/v1/entities/urn:ngsi-ld:WaterPotabilityMetrics:001'
+```

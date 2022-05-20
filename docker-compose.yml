@@ -27,9 +27,10 @@ services:
       - ./backend:/app
       - ./storage:/storage
 
-  orion-ld:
+  orion:
     image: fiware/orion-ld
-    container_name: fiware-orion-ld
+    hostname: orion
+    container_name: fiware-orion
     networks: 
       AIservice: 
         aliases: 
@@ -39,22 +40,20 @@ services:
     ports:
       - "1027:1026"
     depends_on:
-      - mongo-database
+      - mongo-db
     command: -dbhost mongo-db -logLevel DEBUG
 
-  mongo-database:
+  mongo-db:
     image: mongo:3.6
-    container_name: database-mongo
+    hostname: mongo-db
+    container_name: db-mongo
     networks: 
       AIservice: 
         aliases: 
           - mongo.docker
     command: --nojournal
-    volumes:
-      - mongo-database:/database
 
 networks:
   AIservice:
     external: true
-volumes:
-  mongo-database: ~
+
