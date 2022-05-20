@@ -3,11 +3,12 @@ import streamlit as st
 
 from modeling.models_params import rf_param_selector
 from modeling.training import my_train_test_split, training
-from prediction.input_manager import extract_attributes, get_attributes, user_input
+from prediction.input_manager import (extract_attributes, get_attributes,
+                                      user_input)
 from prediction.predict import notify_pred, predict
-from processing.data_manager import (column_types, file_upload, load_csv, plot,
-                                     plot_notmissing, save_dataset, show_plot)
-
+from processing.data_manager import (column_types, file_upload, load_csv,
+                                     save_dataset)
+from visualisation.visualisation import plot, plot_notmissing, show_plot
 
 #***************************** Start HTML configuration *****************************
 
@@ -64,7 +65,7 @@ def main():
 		st.subheader('1. Data loading 🏋️')
 
 		st.write("Import your water potability CSV dataset")
-		with st.beta_expander("Water potability metrics dataset information"):
+		with st.expander("Water potability metrics dataset information"):
 			st.write("This dataset contains water quality metrics for 3276 different water bodies. The target is to classify water Potability based on the 9 attributes ")
 
 		
@@ -88,8 +89,8 @@ def main():
 		# Dataframe columns and types	
 		if file:
 			st.write("Columns and their types:")
-			col = column_types(df)
-			st.write(col)
+			df_col = column_types(df)
+			st.write(df_col)
 
 			# Show Dataframe 
 			st.text("Display uploaded dataframe")
@@ -104,7 +105,7 @@ def main():
 		# User choose type
 		chart_type = st.selectbox("Choose your chart type", plot_types)
 
-		with st.beta_container():
+		with st.container():
 			st.subheader(f"Showing:  {chart_type}")
 			if chart_type == "Kernel Density Estimate":
 				st.write("A kernel density estimate (KDE) plot is a method for visualizing the distribution of the water metrics in the dataset.")
@@ -123,7 +124,7 @@ def main():
 	if choices == 'Data preprocessing':
 		st.header("Data preprocessing")
 		st.subheader("1. Handeling missing values")
-		with st.beta_expander("Impact of missing values on ML algorithms"):
+		with st.expander("Impact of missing values on ML algorithms"):
 			st.write("Training a model with a dataset that has a lot of missing values can drastically impact the machine learning model's quality. There are multiple ways to deal with missing values and they depend on the data and its quality (e.g deleting rows/column with missing values, imputing, etc...)")
 		#the dataframe saved from page 1 in the session state is called now in page 2
 		if st.session_state.file_upload:
@@ -169,7 +170,7 @@ def main():
 	if choices == 'Modeling':
 		st.header("Modeling 💡")
 
-		col1, col2 = st.beta_columns((1, 1))
+		col1, col2 = st.columns((1, 1))
 
 		with col2:
 
@@ -202,7 +203,7 @@ def main():
 			st.info("Link to scikit-learn official documentation about the chosen model [here](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html)")
 
 				
-		Col1, Col2 = st.beta_columns((1, 1))
+		Col1, Col2 = st.columns((1, 1))
 
 		with Col1:
 			st.subheader("3. Model parameters")
@@ -227,7 +228,7 @@ def main():
 
 			st.warning("Traning took =  " + str(duration) + " seconds")
 
-		Column1, Column2 = st.beta_columns((1, 1))
+		Column1, Column2 = st.columns((1, 1))
 
 		with Column1:
 			st.subheader("5. Saving trained model")
