@@ -39,6 +39,8 @@ Run the whole application by executing this command:
 
     "docker-compose up -d --build"
 
+## Dataset to test application 
 
+To test this application, the dataset which should be uploaded should follow the same column names as this sample dataset under "streamlit-app/storage/data.csv"
 
 
